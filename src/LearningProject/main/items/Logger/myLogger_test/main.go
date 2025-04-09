@@ -1,10 +1,9 @@
 package main
 
 import (
+	"LearningProject/main/items/Logger/mylogger"
 	"fmt"
 	"time"
-
-	"example.com/myproject/LearningProject/main/items/Logger/mylogger"
 )
 
 func main() {
