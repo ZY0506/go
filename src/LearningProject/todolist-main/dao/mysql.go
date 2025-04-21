@@ -31,7 +31,6 @@ func LoadConfig() *MysqlConfig {
 }
 
 func Connect() {
-
 	c := LoadConfig()
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		c.User, c.Password, c.Host, c.Port, c.DBname)

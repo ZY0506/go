@@ -2,12 +2,22 @@ package main
 
 import (
 	"LearningProject/gin/list/controller"
+	"LearningProject/gin/list/dao"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	// 创建数据库
+	// Create Database list;
+	// 连接数据库
+	err := dao.Connect()
+	if err != nil {
+		panic(err)
+	}
+	// 模型绑定
+	dao.DB.AutoMigrate(&controller.Todo{})
 	// 注册路由
 	r := gin.Default()
 	// 设置值静态文件

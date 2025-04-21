@@ -18,6 +18,10 @@ type MysqlConfig struct {
 	DB       string `ini:"db"`
 }
 
+var (
+	DB *gorm.DB
+)
+
 // 加载配置文件
 
 func LoadMySQLConfig() *MysqlConfig {
@@ -33,13 +37,13 @@ func LoadMySQLConfig() *MysqlConfig {
 }
 
 // 连接数据库
-func Connect() (*gorm.DB, error) {
+func Connect() (err error) {
 	mysqlconfig := LoadMySQLConfig()
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", mysqlconfig.Username, mysqlconfig.Password, mysqlconfig.Host, mysqlconfig.Port, mysqlconfig.DB)
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
 			NoLowerCase: true, //关闭小写转换
 		},
 	})
-	return db, err
+	return
 }
