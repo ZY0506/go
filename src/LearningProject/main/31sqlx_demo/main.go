@@ -77,7 +77,6 @@ func main() {
 	var u user
 	db.Get(&u, sqlStr)
 	fmt.Printf("u:%#v\n", u)
-
 	var userList = make([]user, 0, 10)
 	sqlStr2 := "select id,name,age from user"
 	err = db.Select(&userList, sqlStr2)
