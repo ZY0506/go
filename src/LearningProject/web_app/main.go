@@ -4,6 +4,7 @@ import (
 	"LearningProject/web_app/dao/mysql"
 	"LearningProject/web_app/dao/redis"
 	"LearningProject/web_app/logger"
+	"LearningProject/web_app/pkg/snowflake"
 	"LearningProject/web_app/routes"
 	"LearningProject/web_app/settings"
 	"context"
@@ -14,7 +15,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
 
@@ -25,28 +25,33 @@ func main() {
 		return
 	}
 	// 2、初始化日志
-	if err := logger.Init(); err != nil {
+	if err := logger.Init(settings.Config.Logger, settings.Config.APP.Mode); err != nil {
 		fmt.Printf("init logger failed,err:%v\n", err)
 		return
 	}
 	defer zap.L().Sync() // 将日志缓冲区中的日志写入到磁盘中
 	// 3、初始化数据库MySQL连接
-	if err := mysql.Init(); err != nil {
+	if err := mysql.Init(settings.Config.MySQL); err != nil {
 		fmt.Printf("init mysql failed,err:%v\n", err)
 		return
 	}
 	defer mysql.Close()
 	// 4、初始化Redis连接
-	if err := redis.Init(); err != nil {
+	if err := redis.Init(settings.Config.Redis); err != nil {
 		fmt.Printf("init redis failed,err:%v\n", err)
 		return
 	}
 	defer redis.Close()
+	// 初始化雪花算法，ID生成器
+	if err := snowflake.Init(settings.Config.APP.StartTime, settings.Config.APP.MachineID); err != nil {
+		fmt.Printf("init snowflake faile,err:%v\n", err)
+		return
+	}
 	// 5、注册路由
-	route := routes.Setup()
+	route := routes.Setup(settings.Config.APP.Mode)
 	// 6、启动服务
 	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%d", viper.GetInt("app.port")),
+		Addr:    fmt.Sprintf(":%d", settings.Config.APP.Port),
 		Handler: route,
 	}
 	go func() {

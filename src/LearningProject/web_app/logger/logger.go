@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"LearningProject/web_app/settings"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -10,33 +11,42 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-func Init() (err error) {
-	WriteSyncer := getLogWriter()
+func Init(logconfig *settings.Logger, mode string) (err error) {
+	WriteSyncer := getLogWriter(logconfig)
 	encoder := getEncoder()
 	var l zapcore.Level
-	err = l.UnmarshalText([]byte(viper.GetString("log.level")))
+	err = l.UnmarshalText([]byte(logconfig.Level))
 	if err != nil {
 		return
 	}
-	core := zapcore.NewCore(encoder, WriteSyncer, l)
+	var core zapcore.Core
+	if mode == "dev" {
+		// 进入开发模式
+		consoleEncoder := zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig())
+		core = zapcore.NewTee(
+			zapcore.NewCore(encoder, WriteSyncer, l),
+			zapcore.NewCore(consoleEncoder, zapcore.Lock(os.Stdout), zapcore.DebugLevel),
+		)
+	} else {
+		core = zapcore.NewCore(encoder, WriteSyncer, l)
+	}
 
 	lg := zap.New(core, zap.AddCaller())
 	zap.ReplaceGlobals(lg) //全局替换,用zap.L()就可以拿到lg
 	return
 }
-func getLogWriter() zapcore.WriteSyncer {
+func getLogWriter(logconfig *settings.Logger) zapcore.WriteSyncer {
 	lumberJackLogger := &lumberjack.Logger{
-		Filename:   viper.GetString("log.filename"),
-		MaxSize:    viper.GetInt("log.max_size"),
-		MaxBackups: viper.GetInt("log.max_backups"),
-		MaxAge:     viper.GetInt("log.max_age"),
-		Compress:   viper.GetBool("log.compress"),
+		Filename:   logconfig.Output,
+		MaxSize:    logconfig.MaxSize,
+		MaxBackups: logconfig.MaxBackups,
+		MaxAge:     logconfig.MaxAge,
+		Compress:   logconfig.Compress,
 	}
 	return zapcore.AddSync(lumberJackLogger)
 }
