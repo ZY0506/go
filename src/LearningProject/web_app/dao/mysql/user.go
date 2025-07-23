@@ -5,16 +5,9 @@ import (
 	"crypto/md5"
 	"database/sql"
 	"encoding/hex"
-	"errors"
 )
 
 var secret = "ZhangYuXiaoWangZi"
-
-var (
-	ErrorUserExist       = errors.New("用户名已存在")
-	ErrorUserNotExist    = errors.New("用户不存在")
-	ErrorInvalidPassword = errors.New("用户名或密码错误")
-)
 
 // CheckUserExist 判断用户是否存在
 func CheckUserExist(username string) error {
@@ -40,12 +33,14 @@ func InsertUser(user *models.User) (err error) {
 	return
 }
 
+// encryptPassword 密码加密
 func encryptPassword(oPassword string) string {
 	h := md5.New()
 	h.Write([]byte(secret))
 	return hex.EncodeToString(h.Sum([]byte(oPassword)))
 }
 
+// Login 用户登录
 func Login(user *models.User) (err error) {
 	oPassword := user.Password
 	sqlStr := `select user_id,username,password from user where username = ?`
@@ -63,4 +58,11 @@ func Login(user *models.User) (err error) {
 		return ErrorInvalidPassword
 	}
 	return
+}
+
+// GetUserByID 根据id查询用户信息
+func GetUserByID(id int64) (*models.User, error) {
+	user := new(models.User)
+	sqlStr := `select user_id,username from user where user_id = ?`
+	return user, db.Get(user, sqlStr, id)
 }

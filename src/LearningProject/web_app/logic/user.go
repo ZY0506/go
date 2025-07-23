@@ -7,6 +7,7 @@ import (
 	"LearningProject/web_app/pkg/snowflake"
 )
 
+// SignUp 用户注册
 func SignUp(p *models.ParamSignUp) (err error) {
 	// 1、检查用户是否存在
 	if err = mysql.CheckUserExist(p.Username); err != nil {
@@ -24,13 +25,14 @@ func SignUp(p *models.ParamSignUp) (err error) {
 	return mysql.InsertUser(u)
 }
 
-func Login(p *models.ParamLogin) (token string, err error) {
+// Login 用户登录
+func Login(p *models.ParamLogin) (aToken, rToken string, err error) {
 	user := &models.User{
 		Username: p.Username,
 		Password: p.Password,
 	}
 	if err = mysql.Login(user); err != nil {
-		return "", err
+		return "", "", err
 	}
 	// 生成jwt
 	return jwt.GenToken(user.UserID, user.Username)

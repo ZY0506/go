@@ -15,7 +15,7 @@ import (
 
 var trans ut.Translator
 
-// 初始化翻译器
+// InitTranc 初始化翻译器
 func InitTranc(local string) (err error) {
 	// 修改gin框架中的validator引擎，添加自定义验证规则
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {

@@ -23,11 +23,23 @@ func Setup(mode string) *gin.Engine {
 	r := gin.New()
 	// 注册全局中间件
 	r.Use(logger.GinLogger(), logger.GinRecovery(true))
-	r.GET("/", func(c *gin.Context) {
-		c.String(http.StatusOK, "OK")
-	})
-	r.POST("/signup", controller.SignUpHandler)
-	r.POST("/login", controller.LoginHandler)
+
+	v1 := r.Group("/api/v1")
+	{
+		v1.POST("/signup", controller.SignUpHandler)
+		v1.POST("/login", controller.LoginHandler)
+		v1.GET("/refresh_token", controller.RefreshTokenHandler)
+	}
+
+	v1.Use(middlewares.JWTAuthMiddleware())
+	{
+		v1.GET("/community", controller.CommunityHandler)
+		v1.GET("/community/:id", controller.CommunityDetailHandler)
+		v1.POST("/post", controller.CreatePostHandler)
+		v1.GET("/post/:id", controller.CetPostDetailHandler)
+		v1.GET("/posts/", controller.CetPostListHandler)
+		v1.POST("vote", controller.PostVoteHandler)
+	}
 	r.GET("ping", middlewares.JWTAuthMiddleware(), func(c *gin.Context) {
 		// 测试，如果是登录的用户，判断请求头中是否有 有效的token
 		c.JSON(http.StatusOK, "pong")

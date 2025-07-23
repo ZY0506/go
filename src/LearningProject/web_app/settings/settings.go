@@ -60,7 +60,7 @@ var Config = new(APPConfig)
 // Init 初始化配置
 func Init() error {
 	// 设置配置文件路径
-	viper.SetConfigFile("./settings/config.yaml")
+	viper.SetConfigFile("./conf/config.yaml")
 	viper.AddConfigPath("./")
 
 	// 读取配置文件

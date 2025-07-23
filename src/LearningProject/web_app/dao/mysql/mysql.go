@@ -11,6 +11,7 @@ import (
 
 var db *sqlx.DB
 
+// Init 初始化连接
 func Init(mysqlconfig *settings.MySQL) (err error) {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		// 读取数据库信息
@@ -31,6 +32,7 @@ func Init(mysqlconfig *settings.MySQL) (err error) {
 	return
 }
 
+// Close 关闭数据库连接
 func Close() {
 	_ = db.Close()
 }

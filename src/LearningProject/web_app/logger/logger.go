@@ -16,6 +16,7 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
+// Init 初始化logger
 func Init(logconfig *settings.Logger, mode string) (err error) {
 	WriteSyncer := getLogWriter(logconfig)
 	encoder := getEncoder()
@@ -40,6 +41,8 @@ func Init(logconfig *settings.Logger, mode string) (err error) {
 	zap.ReplaceGlobals(lg) //全局替换,用zap.L()就可以拿到lg
 	return
 }
+
+// getLogWriter 配置日志文件
 func getLogWriter(logconfig *settings.Logger) zapcore.WriteSyncer {
 	lumberJackLogger := &lumberjack.Logger{
 		Filename:   logconfig.Output,
@@ -51,6 +54,7 @@ func getLogWriter(logconfig *settings.Logger) zapcore.WriteSyncer {
 	return zapcore.AddSync(lumberJackLogger)
 }
 
+// getEncoder 配置日志格式
 func getEncoder() zapcore.Encoder {
 	encoderConfig := zapcore.EncoderConfig{
 		TimeKey:        "ts",
@@ -115,7 +119,7 @@ func GinRecovery(stack bool) gin.HandlerFunc {
 						zap.String("request", string(httpRequest)),
 					)
 					// If the connection is dead, we can't write a status to it.
-					c.Error(err.(error)) // nolint: errcheck
+					_ = c.Error(err.(error)) // nolint: errcheck
 					c.Abort()
 					return
 				}
